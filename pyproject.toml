@@ -1,0 +1,22 @@
+[project]
+name = "phate-analysis-plugin"
+version = "0.1.0"
+description = "PHATE dimensionality reduction plugin"
+authors = [
+    {name = "CauldronGO Team"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click (>=8.3.1,<9.0.0)",
+    "numpy (>=2.4.2,<3.0.0)",
+    "pandas (>=3.0.1,<4.0.0)",
+    "phate (>=2.0.0,<3.0.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
+    "scikit-learn (>=1.8.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
