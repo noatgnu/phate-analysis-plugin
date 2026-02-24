@@ -173,7 +173,8 @@ def detect_clusters(
 def generate_3d_plot(
     phate_df: pd.DataFrame,
     output_folder: str,
-    color_by: str = "condition",
+    color_by: str = "cluster",
+    symbol_by: str = "condition",
     title: str = "PHATE 3D Visualization"
 ):
     """
@@ -181,13 +182,15 @@ def generate_3d_plot(
 
     :param phate_df: DataFrame with PHATE coordinates.
     :param output_folder: Path to output folder.
-    :param color_by: Column to use for coloring points.
+    :param color_by: Column to use for coloring points (default: cluster).
+    :param symbol_by: Column to use for marker shape (default: condition).
     :param title: Plot title.
     """
     if "z_phate" not in phate_df.columns:
         return
 
     color_col = color_by if color_by in phate_df.columns else None
+    symbol_col = symbol_by if symbol_by in phate_df.columns else None
 
     fig = px.scatter_3d(
         phate_df,
@@ -195,6 +198,7 @@ def generate_3d_plot(
         y="y_phate",
         z="z_phate",
         color=color_col,
+        symbol=symbol_col,
         hover_name="sample",
         hover_data={col: True for col in phate_df.columns if col not in ["x_phate", "y_phate", "z_phate"]},
         title=title
@@ -218,10 +222,48 @@ def generate_3d_plot(
     fig.write_html(os.path.join(output_folder, "phate_3d.html"))
 
 
+def load_annotation(annotation_file: str, sample_names: list[str]) -> pd.DataFrame:
+    """
+    Load and parse annotation file.
+
+    :param annotation_file: Path to annotation file.
+    :param sample_names: List of sample names to match.
+    :return: DataFrame with annotation data indexed by sample.
+    """
+    if annotation_file.endswith(".csv"):
+        ann_df = pd.read_csv(annotation_file)
+    else:
+        ann_df = pd.read_csv(annotation_file, sep="\t")
+
+    if "Sample" not in ann_df.columns:
+        raise ValueError("Annotation file must have 'Sample' column")
+
+    ann_df["Sample_short"] = ann_df["Sample"].apply(
+        lambda x: os.path.splitext(os.path.basename(x))[0]
+    )
+
+    sample_short_names = [os.path.splitext(os.path.basename(s))[0] for s in sample_names]
+
+    sample_to_short = dict(zip(sample_names, sample_short_names))
+    short_to_ann = ann_df.set_index("Sample_short").to_dict("index")
+
+    result = []
+    for sample in sample_names:
+        short_name = sample_to_short[sample]
+        if short_name in short_to_ann:
+            row = short_to_ann[short_name].copy()
+            row["sample"] = sample
+            result.append(row)
+        else:
+            result.append({"sample": sample})
+
+    return pd.DataFrame(result)
+
+
 def phate_(
     input_file: str,
     output_folder: str,
-    columns_name: list[str],
+    columns_name: list[str] = None,
     n_components: int = 2,
     log2: bool = False,
     cluster_method: str = "none",
@@ -229,14 +271,15 @@ def phate_(
     dbscan_eps: float = 0.5,
     dbscan_min_samples: int = 5,
     auto_k: bool = False,
-    max_k: int = 10
+    max_k: int = 10,
+    annotation_file: str = None
 ):
     """
     Perform PHATE analysis with optional clustering.
 
     :param input_file: Path to input data file.
     :param output_folder: Path to output folder.
-    :param columns_name: List of column names for analysis.
+    :param columns_name: List of column names for analysis (optional if annotation_file provided).
     :param n_components: Number of PHATE components.
     :param log2: Whether to apply log2 transformation.
     :param cluster_method: Clustering method ('none', 'kmeans', 'dbscan').
@@ -245,6 +288,7 @@ def phate_(
     :param dbscan_min_samples: DBSCAN minimum samples parameter.
     :param auto_k: Whether to automatically determine k using elbow method.
     :param max_k: Maximum k to test for elbow method.
+    :param annotation_file: Path to annotation file with sample metadata.
     :return: PHATE dataframe with optional cluster assignments.
     """
     assert n_components >= 2, "Number of components must be at least 2"
@@ -255,6 +299,20 @@ def phate_(
         df = pd.read_csv(input_file, sep=",")
     else:
         raise ValueError("Invalid file extension")
+
+    if annotation_file and os.path.exists(annotation_file):
+        if annotation_file.endswith(".csv"):
+            ann_df = pd.read_csv(annotation_file)
+        else:
+            ann_df = pd.read_csv(annotation_file, sep="\t")
+
+        if "Sample" not in ann_df.columns:
+            raise ValueError("Annotation file must have 'Sample' column")
+
+        columns_name = ann_df["Sample"].tolist()
+
+    if not columns_name:
+        raise ValueError("Either columns_name or annotation_file with Sample column must be provided")
 
     data = np.log2(df[columns_name].transpose()) if log2 else df[columns_name].transpose()
     data.replace([np.inf, -np.inf], 0, inplace=True)
@@ -270,6 +328,16 @@ def phate_(
     phate_df.rename(columns=col_names, inplace=True)
 
     phate_df["sample"] = columns_name
+
+    if annotation_file and os.path.exists(annotation_file):
+        ann_df_merged = load_annotation(annotation_file, columns_name)
+        for col in ann_df_merged.columns:
+            if col != "sample" and col not in phate_df.columns:
+                phate_df[col] = ann_df_merged[col].values
+        if "Condition" in phate_df.columns:
+            phate_df["condition"] = phate_df["Condition"]
+        if "Batch" in phate_df.columns:
+            phate_df["batch"] = phate_df["Batch"]
 
     os.makedirs(output_folder, exist_ok=True)
 
@@ -292,7 +360,14 @@ def phate_(
 
     if n_components == 3:
         color_by = "cluster" if "cluster" in phate_df.columns else "sample"
-        generate_3d_plot(phate_df, output_folder, color_by=color_by, title="PHATE 3D Visualization")
+        symbol_by = "condition" if "condition" in phate_df.columns else None
+        generate_3d_plot(
+            phate_df,
+            output_folder,
+            color_by=color_by,
+            symbol_by=symbol_by,
+            title="PHATE 3D Visualization"
+        )
 
     if optimal_k is not None:
         print(f"Optimal number of clusters (elbow method): {optimal_k}")
@@ -303,7 +378,7 @@ def phate_(
 @click.command()
 @click.option("--input_file", "-i", help="Path to the input file")
 @click.option("--output_folder", "-o", help="Path to the output folder")
-@click.option("--columns_name", "-c", help="Name of the columns to be included in the analysis")
+@click.option("--columns_name", "-c", default=None, help="Name of the columns to be included in the analysis (optional if annotation_file provided)")
 @click.option("--n_components", "-n", type=int, help="Number of components", default=2)
 @click.option("--log2", "-l", is_flag=True, help="Log2 transform the data")
 @click.option("--cluster_method", "-m", type=click.Choice(["none", "kmeans", "dbscan"]), default="none", help="Clustering method")
@@ -312,6 +387,7 @@ def phate_(
 @click.option("--dbscan_min_samples", "-s", type=int, default=5, help="DBSCAN minimum samples parameter")
 @click.option("--auto_k", "-a", is_flag=True, help="Automatically determine optimal k using elbow method")
 @click.option("--max_k", type=int, default=10, help="Maximum k to test for elbow method")
+@click.option("--annotation_file", help="Path to annotation file with sample metadata (Sample, Condition, Batch, Color)")
 def main(
     input_file: str,
     output_folder: str,
@@ -323,13 +399,15 @@ def main(
     dbscan_eps: float,
     dbscan_min_samples: int,
     auto_k: bool,
-    max_k: int
+    max_k: int,
+    annotation_file: str
 ):
     """PHATE dimensionality reduction with optional cluster detection."""
+    cols = columns_name.split(",") if columns_name else None
     phate_(
         input_file,
         output_folder,
-        columns_name.split(","),
+        cols,
         n_components,
         log2,
         cluster_method,
@@ -337,7 +415,8 @@ def main(
         dbscan_eps,
         dbscan_min_samples,
         auto_k,
-        max_k
+        max_k,
+        annotation_file
     )
 
 

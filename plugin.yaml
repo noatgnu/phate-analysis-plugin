@@ -24,17 +24,10 @@ inputs:
   - name: "annotation_file"
     label: "Sample Annotation File"
     type: "file"
-    required: false
-    accept: ".csv,.tsv,.txt"
-    description: "Optional annotation file for sample grouping and coloring (Sample, Condition, Batch, Color)"
-
-  - name: "columns_name"
-    label: "Sample Columns"
-    type: "column-selector"
     required: true
-    multiple: true
-    sourceFile: "input_file"
-    description: "Select columns containing sample data for PHATE analysis"
+    accept: ".csv,.tsv,.txt"
+    description: "Annotation file with Sample column specifying which columns to analyze, plus Condition/Batch for grouping"
+    disableAnnotationManagement: true
 
   - name: "n_components"
     label: "Number of Components"
@@ -144,7 +137,6 @@ outputs:
     format: "html"
 
 annotation:
-  samplesFrom: "columns_name"
   annotationFile: "annotation_file"
 
 plots:
@@ -297,9 +289,7 @@ plots:
 execution:
   argsMapping:
     input_file: "--input_file"
-    columns_name:
-      flag: "--columns_name"
-      transform: "comma-join"
+    annotation_file: "--annotation_file"
     n_components: "--n_components"
     log2:
       flag: "--log2"
@@ -329,13 +319,9 @@ example:
   enabled: true
   values:
     input_file: "diann/imputed.data.txt"
-    columns_name_source: "diann/imputed.data.txt"
-    columns_name:
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw'
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw'
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw'
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw'
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw'
-      - 'C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw'
-    n_components: 2
+    annotation_file: "diann/annotation.txt"
+    n_components: 3
     log2: true
+    cluster_method: "kmeans"
+    auto_k: true
+    max_k: 6
