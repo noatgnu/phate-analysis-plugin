@@ -63,6 +63,15 @@ inputs:
       - "dbscan"
     description: "Method to detect clusters from PHATE embeddings"
 
+  - name: "auto_k"
+    label: "Auto-detect Cluster Count"
+    type: "boolean"
+    default: false
+    description: "Automatically determine optimal number of clusters using elbow method"
+    visibleWhen:
+      field: "cluster_method"
+      equals: "kmeans"
+
   - name: "n_clusters"
     label: "Number of Clusters"
     type: "number"
@@ -71,10 +80,23 @@ inputs:
     min: 2
     max: 20
     step: 1
-    description: "Number of clusters for KMeans clustering"
+    description: "Number of clusters for KMeans clustering (ignored if auto-detect is enabled)"
     visibleWhen:
       field: "cluster_method"
       equals: "kmeans"
+
+  - name: "max_k"
+    label: "Max Clusters to Test"
+    type: "number"
+    required: false
+    default: 10
+    min: 3
+    max: 30
+    step: 1
+    description: "Maximum number of clusters to test for elbow method"
+    visibleWhen:
+      field: "auto_k"
+      equals: true
 
   - name: "dbscan_eps"
     label: "DBSCAN Epsilon"
@@ -108,6 +130,18 @@ outputs:
     type: "data"
     description: "PHATE coordinates for each sample"
     format: "tsv"
+
+  - name: "phate_3d"
+    path: "phate_3d.html"
+    type: "html"
+    description: "Interactive 3D PHATE visualization (generated when n_components=3)"
+    format: "html"
+
+  - name: "elbow_plot"
+    path: "elbow_plot.html"
+    type: "html"
+    description: "Elbow plot for optimal cluster count (generated when auto_k is enabled)"
+    format: "html"
 
 annotation:
   samplesFrom: "columns_name"
@@ -271,7 +305,11 @@ execution:
       flag: "--log2"
       when: "true"
     cluster_method: "--cluster_method"
+    auto_k:
+      flag: "--auto_k"
+      when: "true"
     n_clusters: "--n_clusters"
+    max_k: "--max_k"
     dbscan_eps: "--dbscan_eps"
     dbscan_min_samples: "--dbscan_min_samples"
 
@@ -285,6 +323,7 @@ execution:
       - "phate>=1.0.0"
       - "matplotlib>=3.7.0"
       - "scikit-learn>=1.3.0"
+      - "plotly>=5.18.0"
 
 example:
   enabled: true

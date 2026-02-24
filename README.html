@@ -198,12 +198,28 @@
 <td>Always visible</td>
 </tr>
 <tr>
+<td><code>auto_k</code></td>
+<td>Auto-detect Cluster Count</td>
+<td>boolean</td>
+<td>No</td>
+<td>false</td>
+<td>Visible when <code>cluster_method</code> = <code>kmeans</code></td>
+</tr>
+<tr>
 <td><code>n_clusters</code></td>
 <td>Number of Clusters</td>
 <td>number (min: 2, max: 20, step: 1)</td>
 <td>No</td>
 <td>5</td>
 <td>Visible when <code>cluster_method</code> = <code>kmeans</code></td>
+</tr>
+<tr>
+<td><code>max_k</code></td>
+<td>Max Clusters to Test</td>
+<td>number (min: 3, max: 30, step: 1)</td>
+<td>No</td>
+<td>10</td>
+<td>Visible when <code>auto_k</code> = <code>true</code></td>
 </tr>
 <tr>
 <td><code>dbscan_eps</code></td>
@@ -242,8 +258,12 @@
 <ul>
 <li><strong>Options</strong>: <code>none</code>, <code>kmeans</code>, <code>dbscan</code></li>
 </ul>
+<h4 id="auto-detect-cluster-count-auto-k">Auto-detect Cluster Count (<code>auto_k</code>)</h4>
+<p>Automatically determine optimal number of clusters using elbow method</p>
 <h4 id="number-of-clusters-n-clusters">Number of Clusters (<code>n_clusters</code>)</h4>
-<p>Number of clusters for KMeans clustering</p>
+<p>Number of clusters for KMeans clustering (ignored if auto-detect is enabled)</p>
+<h4 id="max-clusters-to-test-max-k">Max Clusters to Test (<code>max_k</code>)</h4>
+<p>Maximum number of clusters to test for elbow method</p>
 <h4 id="dbscan-epsilon-dbscan-eps">DBSCAN Epsilon (<code>dbscan_eps</code>)</h4>
 <p>Maximum distance between samples for DBSCAN neighborhood</p>
 <h4 id="dbscan-min-samples-dbscan-min-samples">DBSCAN Min Samples (<code>dbscan_min_samples</code>)</h4>
@@ -266,6 +286,20 @@
 <td>data</td>
 <td>tsv</td>
 <td>PHATE coordinates for each sample</td>
+</tr>
+<tr>
+<td><code>phate_3d</code></td>
+<td><code>phate_3d.html</code></td>
+<td>html</td>
+<td>html</td>
+<td>Interactive 3D PHATE visualization (generated when n_components=3)</td>
+</tr>
+<tr>
+<td><code>elbow_plot</code></td>
+<td><code>elbow_plot.html</code></td>
+<td>html</td>
+<td>html</td>
+<td>Elbow plot for optimal cluster count (generated when auto_k is enabled)</td>
 </tr>
 </tbody>
 </table>
@@ -303,17 +337,18 @@
 <li><code>phate&gt;=1.0.0</code></li>
 <li><code>matplotlib&gt;=3.7.0</code></li>
 <li><code>scikit-learn&gt;=1.3.0</code></li>
+<li><code>plotly&gt;=5.18.0</code></li>
 </ul>
 <blockquote>
 <p><strong>Note</strong>: When you create a custom environment for this plugin, these dependencies will be automatically installed.</p>
 </blockquote>
 <h2 id="example-data">Example Data</h2>
 <p>This plugin includes example data for testing:</p>
-<pre><code class="language-yaml">  log2: true
-  input_file: diann/imputed.data.txt
+<pre><code class="language-yaml">  input_file: diann/imputed.data.txt
   columns_name_source: diann/imputed.data.txt
   columns_name: [C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw]
   n_components: 2
+  log2: true
 </code></pre>
 <p>Load example data by clicking the <strong>Load Example</strong> button in the UI.</p>
 <h2 id="usage">Usage</h2>

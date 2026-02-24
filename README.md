@@ -39,7 +39,9 @@ PHATE (Potential of Heat-diffusion for Affinity-based Trajectory Embedding) for 
 | `n_components` | Number of Components | number (min: 2, max: 10, step: 1) | Yes | 2 | Always visible |
 | `log2` | Apply Log2 Transform | boolean | No | false | Always visible |
 | `cluster_method` | Clustering Method | select (none, kmeans, dbscan) | No | none | Always visible |
+| `auto_k` | Auto-detect Cluster Count | boolean | No | false | Visible when `cluster_method` = `kmeans` |
 | `n_clusters` | Number of Clusters | number (min: 2, max: 20, step: 1) | No | 5 | Visible when `cluster_method` = `kmeans` |
+| `max_k` | Max Clusters to Test | number (min: 3, max: 30, step: 1) | No | 10 | Visible when `auto_k` = `true` |
 | `dbscan_eps` | DBSCAN Epsilon | number (min: 0, max: 10, step: 0) | No | 0.5 | Visible when `cluster_method` = `dbscan` |
 | `dbscan_min_samples` | DBSCAN Min Samples | number (min: 2, max: 50, step: 1) | No | 5 | Visible when `cluster_method` = `dbscan` |
 
@@ -77,9 +79,19 @@ Method to detect clusters from PHATE embeddings
 
 - **Options**: `none`, `kmeans`, `dbscan`
 
+#### Auto-detect Cluster Count (`auto_k`)
+
+Automatically determine optimal number of clusters using elbow method
+
+
 #### Number of Clusters (`n_clusters`)
 
-Number of clusters for KMeans clustering
+Number of clusters for KMeans clustering (ignored if auto-detect is enabled)
+
+
+#### Max Clusters to Test (`max_k`)
+
+Maximum number of clusters to test for elbow method
 
 
 #### DBSCAN Epsilon (`dbscan_eps`)
@@ -97,6 +109,8 @@ Minimum number of samples in a neighborhood for DBSCAN core points
 | Name | File | Type | Format | Description |
 |------|------|------|--------|-------------|
 | `phate_output` | `phate_output.txt` | data | tsv | PHATE coordinates for each sample |
+| `phate_3d` | `phate_3d.html` | html | html | Interactive 3D PHATE visualization (generated when n_components=3) |
+| `elbow_plot` | `elbow_plot.html` | html | html | Elbow plot for optimal cluster count (generated when auto_k is enabled) |
 
 ## Sample Annotation
 
@@ -137,6 +151,7 @@ Packages are defined inline in the plugin configuration:
 - `phate>=1.0.0`
 - `matplotlib>=3.7.0`
 - `scikit-learn>=1.3.0`
+- `plotly>=5.18.0`
 
 > **Note**: When you create a custom environment for this plugin, these dependencies will be automatically installed.
 
@@ -145,11 +160,11 @@ Packages are defined inline in the plugin configuration:
 This plugin includes example data for testing:
 
 ```yaml
+  log2: true
   input_file: diann/imputed.data.txt
   columns_name_source: diann/imputed.data.txt
   columns_name: [C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw]
   n_components: 2
-  log2: true
 ```
 
 Load example data by clicking the **Load Example** button in the UI.
