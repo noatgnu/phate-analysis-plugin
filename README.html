@@ -161,14 +161,6 @@
 <td><code>annotation_file</code></td>
 <td>Sample Annotation File</td>
 <td>file</td>
-<td>No</td>
-<td>-</td>
-<td>Always visible</td>
-</tr>
-<tr>
-<td><code>columns_name</code></td>
-<td>Sample Columns</td>
-<td>column-selector (multiple)</td>
 <td>Yes</td>
 <td>-</td>
 <td>Always visible</td>
@@ -243,12 +235,7 @@
 <h4 id="input-file-input-file">Input File (<code>input_file</code>)</h4>
 <p>Data matrix file containing samples and measurements</p>
 <h4 id="sample-annotation-file-annotation-file">Sample Annotation File (<code>annotation_file</code>)</h4>
-<p>Optional annotation file for sample grouping and coloring (Sample, Condition, Batch, Color)</p>
-<h4 id="sample-columns-columns-name">Sample Columns (<code>columns_name</code>)</h4>
-<p>Select columns containing sample data for PHATE analysis</p>
-<ul>
-<li><strong>Column Source</strong>: <code>input_file</code></li>
-</ul>
+<p>Annotation file with Sample column specifying which columns to analyze, plus Condition/Batch for grouping</p>
 <h4 id="number-of-components-n-components">Number of Components (<code>n_components</code>)</h4>
 <p>Number of PHATE components to compute</p>
 <h4 id="apply-log2-transform-log2">Apply Log2 Transform (<code>log2</code>)</h4>
@@ -306,7 +293,6 @@
 <h2 id="sample-annotation">Sample Annotation</h2>
 <p>This plugin supports sample annotation:</p>
 <ul>
-<li><strong>Samples From</strong>: <code>columns_name</code></li>
 <li><strong>Annotation File</strong>: <code>annotation_file</code></li>
 </ul>
 <h2 id="visualizations">Visualizations</h2>
@@ -344,10 +330,12 @@
 </blockquote>
 <h2 id="example-data">Example Data</h2>
 <p>This plugin includes example data for testing:</p>
-<pre><code class="language-yaml">  input_file: diann/imputed.data.txt
-  columns_name_source: diann/imputed.data.txt
-  columns_name: [C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw]
-  n_components: 2
+<pre><code class="language-yaml">  cluster_method: kmeans
+  auto_k: true
+  max_k: 6
+  input_file: diann/imputed.data.txt
+  annotation_file: diann/annotation.txt
+  n_components: 3
   log2: true
 </code></pre>
 <p>Load example data by clicking the <strong>Load Example</strong> button in the UI.</p>

@@ -34,8 +34,7 @@ PHATE (Potential of Heat-diffusion for Affinity-based Trajectory Embedding) for 
 | Name | Label | Type | Required | Default | Visibility |
 |------|-------|------|----------|---------|------------|
 | `input_file` | Input File | file | Yes | - | Always visible |
-| `annotation_file` | Sample Annotation File | file | No | - | Always visible |
-| `columns_name` | Sample Columns | column-selector (multiple) | Yes | - | Always visible |
+| `annotation_file` | Sample Annotation File | file | Yes | - | Always visible |
 | `n_components` | Number of Components | number (min: 2, max: 10, step: 1) | Yes | 2 | Always visible |
 | `log2` | Apply Log2 Transform | boolean | No | false | Always visible |
 | `cluster_method` | Clustering Method | select (none, kmeans, dbscan) | No | none | Always visible |
@@ -54,14 +53,8 @@ Data matrix file containing samples and measurements
 
 #### Sample Annotation File (`annotation_file`)
 
-Optional annotation file for sample grouping and coloring (Sample, Condition, Batch, Color)
+Annotation file with Sample column specifying which columns to analyze, plus Condition/Batch for grouping
 
-
-#### Sample Columns (`columns_name`)
-
-Select columns containing sample data for PHATE analysis
-
-- **Column Source**: `input_file`
 
 #### Number of Components (`n_components`)
 
@@ -116,7 +109,6 @@ Minimum number of samples in a neighborhood for DBSCAN core points
 
 This plugin supports sample annotation:
 
-- **Samples From**: `columns_name`
 - **Annotation File**: `annotation_file`
 
 ## Visualizations
@@ -160,11 +152,13 @@ Packages are defined inline in the plugin configuration:
 This plugin includes example data for testing:
 
 ```yaml
-  log2: true
   input_file: diann/imputed.data.txt
-  columns_name_source: diann/imputed.data.txt
-  columns_name: [C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw]
-  n_components: 2
+  annotation_file: diann/annotation.txt
+  n_components: 3
+  log2: true
+  cluster_method: kmeans
+  auto_k: true
+  max_k: 6
 ```
 
 Load example data by clicking the **Load Example** button in the UI.
